@@ -8,14 +8,14 @@ rm(list=ls())
 library(data.table)
 library(skimr)
 
-# select site 
+# user: select site 
 	site <- "Stensjön"
 
-# sets dirs
+# user: sets dirs
 	dir_inputs <- "001_Inputs/raw/"
 	dir_save <- "001_Inputs/prepared/"	
 
-# reads data
+# user: reads data
 	a<-fread(file=paste(dir_inputs,"Input_FiskvariablerPerBnät.txt",sep=""), header=T, na.strings=c("NA"," ",""), dec=",")
 
 # define target_vars
@@ -63,10 +63,10 @@ library(skimr)
 
 # handles strata sizes
 	if(site=="Stensjön"){
-				a$NStations[a$DepthStratum=="0-3m"] <- 8
-				a$NStations[a$DepthStratum=="3-6m"] <- 8
-				a$NStations[a$DepthStratum=="6-12m"] <- 8
-	}	
+		a$NStations[a$DepthStratum=="0-3m"] <- 8
+		a$NStations[a$DepthStratum=="3-6m"] <- 8
+		a$NStations[a$DepthStratum=="6-12m"] <- 8
+		}	
 
 # saves prepared data
 	final_cols<-c('Area','Year','Season','Gear','GearCode','RepeatedDay','DepthStratum','Depth','Disturbance','Station','NStations',target_vars)
