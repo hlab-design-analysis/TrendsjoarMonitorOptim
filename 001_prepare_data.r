@@ -59,7 +59,7 @@ library(skimr)
 	# check on duplicates [should yield 3*TRUE]
 	sum(apply(table(a$Year[a$DepthStratum=="0-3m"],a$Station[a$DepthStratum=="0-3m"]),2,sum)>1)==0
 	sum(apply(table(a$Year[a$DepthStratum=="3-6m"],a$Station[a$DepthStratum=="3-6m"]),2,sum)>1)==0
-	sum(apply(table(a$Year[a$DepthStratum=="6-10m"],a$Station[a$DepthStratum=="6-10m"]),2,sum)>1)==0
+	sum(apply(table(a$Year[a$DepthStratum=="6-12m"],a$Station[a$DepthStratum=="6-12m"]),2,sum)>1)==0
 
 # handles strata sizes
 	if(site=="Stensjön"){
