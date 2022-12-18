@@ -13,9 +13,9 @@ library(skimr)
 
 # user: sets dirs
 	dir_inputs <- "001_Inputs/raw/"
-	dir_save <- "001_Inputs/prepared/"	
+	dir_save <- "001_Inputs/prepared/"
 
-# user: reads data
+# user: reads raw data
 	a<-fread(file=paste(dir_inputs,"Input_FiskvariablerPerBnät.txt",sep=""), header=T, na.strings=c("NA"," ",""), dec=",")
 
 # define target_vars
@@ -71,4 +71,4 @@ library(skimr)
 # saves prepared data
 	final_cols<-c('Area','Year','Season','Gear','GearCode','RepeatedDay','DepthStratum','Depth','Disturbance','Station','NStations',target_vars)
 	dt_site<-a[,..final_cols]
-	save(dt_site, target_vars, file=paste(dir_save, site,".Rdata",sep="")
+	save(dt_site, target_vars, file=paste(dir_save, site,".Rdata",sep=""))
