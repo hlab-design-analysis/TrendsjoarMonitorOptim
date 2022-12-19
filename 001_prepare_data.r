@@ -16,8 +16,10 @@ library(skimr)
 	dir_outputs <- "001_Inputs/prepared/"
 	if(!file.exists(dir_outputs)) dir.create(dir_outputs, recursive=T, showWarnings=FALSE)
 
-# user: reads raw data
-	a<-fread(file=paste(dir_inputs,"Input_FiskvariablerPerBnät.txt",sep=""), header=T, na.strings=c("NA"," ",""), dec=",")
+# user: place the raw data in txt (tab-separated) format in "001_Inputs/raw"
+
+# user: reads raw data [issues a minor warning]
+	a<-fread(file=paste(dir_inputs,"Stensjön.txt",sep=""), header=T, na.strings=c("NA"," ",""), dec=",")
 
 # define target_vars
 	target_vars <- c('NabborB','BabborB','NgäddaB','BgäddaB','NlakeB','BlakeB','NmörtB','BmörtB','Narter','NtotalB','BtotalB','mlg10Labbo','mlg10Lmört','BpiscAbbBNet')
@@ -64,12 +66,12 @@ library(skimr)
 
 # handles strata sizes
 	if(site=="Stensjön"){
-		a$NStations[a$DepthStratum=="0-3m"] <- 8
-		a$NStations[a$DepthStratum=="3-6m"] <- 8
-		a$NStations[a$DepthStratum=="6-12m"] <- 8
+		a$N[a$DepthStratum=="0-3m"] <- 8
+		a$N[a$DepthStratum=="3-6m"] <- 8
+		a$N[a$DepthStratum=="6-12m"] <- 8
 		}	
 
 # saves prepared data
-	final_cols<-c('Area','Year','Season','Gear','GearCode','RepeatedDay','DepthStratum','Depth','Disturbance','Station','NStations',target_vars)
+	final_cols<-c('Area','Year','Season','Gear','GearCode','RepeatedDay','DepthStratum','Depth','Disturbance','Station','N',target_vars)
 	dt_site<-a[,..final_cols]
 	save(dt_site, target_vars, file=paste(dir_outputs, site,".Rdata",sep=""))
