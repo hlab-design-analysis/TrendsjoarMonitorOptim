@@ -22,8 +22,9 @@ library(data.table)
 	all(dt_site[,.N, list(Year, DepthStratum)][order(Year, DepthStratum)]==dt_site[,length(unique(Station)), list(Year, DepthStratum)][order(Year, DepthStratum)])
 
 # prepares sample sizes			
-	out<-dt_site[,list(Year, DepthStratum,NStations)][order(Year, DepthStratum,NStations)]
+	out<-dt_site[,list(Year, DepthStratum,N=NStations)][order(Year, DepthStratum,N)]
 
+# user: you can tune the below to your specific example (but keep the use of "n" as prefix - it is looked for in a later script)
 	out$n21<-7
 	out$n18<-6
 	out$n15<-5
