@@ -36,6 +36,7 @@ do_summary_stratified_mean_time_series <- function (x, target_var, strata_var, s
 
 	if (!is.null(period_var))
 		{
+
 		# stratified variance
 			# strata summary
 				b1<-x[,list(stratum_size=eval(size)[1], variable = target_var, n=sum(!is.na(eval(values))), mean_x = mean(eval(values), na.rm=TRUE ), var_x = var(eval(values), na.rm=TRUE ), var_mean_x = var(eval(values), na.rm=TRUE )/sum(!is.na(eval(values))), se_mean_x = sd(eval(values), na.rm=TRUE )/sqrt(sum(!is.na(eval(values))))),list(eval(period), eval(stratum))][order(period, stratum)]
