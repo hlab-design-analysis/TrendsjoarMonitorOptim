@@ -6,12 +6,10 @@
 
 rm(list=ls()); graphics.off()
 
+# auto: loads libraries
 library(data.table)
 
-library(data.table)
-#library("PerformanceAnalytics")
-
-# sources required functions
+# auto: loads functions
 source("000_Funs/func_do_summary_stratified_mean_time_series.r")
 
 # user: select site
@@ -22,10 +20,13 @@ dir_inputs_data<-"001_Inputs/prepared/"
 dir_inputs_sim_res <- "003_SamplingSims/"
 dir_outputs <- "003_SamplingSims/Analysis_Original/"; dir.create(dir_outputs, recursive=T, showWarnings=FALSE)
 
-# loads original data			
-	load(file=paste(dir_inputs_data,site,".Rdata",sep=""))
+# user: select nsims (used to load sim results - should be the same as set in 003a)
+	nsims<-5 # 10000
+
+# auto: loads sample data (output from script 001)
+	load(file=paste0(dir_inputs_data,site,".Rdata"))
 # loads simulations
-	load(file=paste(dir_inputs_sim_res, site, "_3sims_res_pop_prep.RData", sep="")) 
+	load(file=paste0(dir_inputs_sim_res, site,"_",nsims,"sims_res_pop_prep.RData", sep="")) 
 
 # some formating
 boot_res_pop$Year<-as.numeric(as.character(boot_res_pop$Year))
@@ -52,19 +53,13 @@ target_vars<-c('AbCyW','BabborB','BgäddaB','BlakeB','BmörtB','BpiscAbbBNet','B
 					plot(b$boothigh_perc~b$id, type="n", ylim=ylimite, ylab="", xlab="", las=2, main=tit, xlim=c(min(as.numeric(boot_res_pop$Year)), max(as.numeric(boot_res_pop$Year))+1), cex.axis=1.2, cex.lab=1.2)
 					if(max(b$boothigh_perc)<1000) mtext("Indikatorvärde", side = 2, line = 3) else mtext("Indikatorvärde", side = 2, line = 3.3)
 				counter<-0
-				for(sampsize in c("NStations"))
+				for(sampsize in c("N"))
 				{
-					print(sampsize)
 					a<-b[SampSize==sampsize,]
 					
 					if(sum(!is.na(a$true_mean))>0)
 					{
-					
-					#inside_ids <- a[as.numeric(eval(paste(true_mean))) %between% list(clow_mean, chigh_mean),]$id
-					#outside_ids <- a$id[!a$id %in% inside_ids]
-					
 					segments(x0 = a$id+counter, y0 = a$bootlow_perc, x1 = a$id+counter, y1 = a$boothigh_perc, col="blue", lwd=2)
-					#points(a$boot_mean~c(a$id+counter), col="red", pch=19, cex=0.8)
 					points(a$boot_mean~c(a$id+counter), col="blue", pch=19, cex=0.8)
 					points(a$true_mean~c(a$id+counter), col="black", pch=4, cex=0.8)
 					counter <- counter+0.08
