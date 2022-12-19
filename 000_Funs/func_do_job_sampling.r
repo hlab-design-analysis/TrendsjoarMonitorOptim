@@ -1,4 +1,4 @@
-do_job <- function(lo){				
+do_job_sampling <- function(lo){				
 
 # wrapper to simulate sampling
 # Nuno Prista, SLU Aqua, 2019 @  Kustmonitoring
@@ -74,7 +74,7 @@ do_job <- function(lo){
 
 		a<- lapply(target_vars1, function(x, x1 = y1)  
 							{
-							a<-do_summary_stratified_mean(x = x1, target_var = x, strata_var = "DepthStratum", strata_size_var = "NStations")
+							a<-do_summary_stratified_mean(x = x1, target_var = x, strata_var = "DepthStratum", strata_size_var = "N")
               
 							res = list(
 									pop_res = data.table(Area = x1$Area[1], Season = x1$Season[1], Year = x1$Year[1], SampSize = x1$SampSize[1], repl = lo, a$pop_res), 
