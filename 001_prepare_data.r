@@ -13,7 +13,8 @@ library(skimr)
 
 # user: sets dirs
 	dir_inputs <- "001_Inputs/raw/"
-	dir_save <- "001_Inputs/prepared/"
+	dir_outputs <- "001_Inputs/prepared/"
+	if(!file.exists(dir_outputs)) dir.create(dir_outputs, recursive=T, showWarnings=FALSE)
 
 # user: reads raw data
 	a<-fread(file=paste(dir_inputs,"Input_FiskvariablerPerBnät.txt",sep=""), header=T, na.strings=c("NA"," ",""), dec=",")
@@ -71,4 +72,4 @@ library(skimr)
 # saves prepared data
 	final_cols<-c('Area','Year','Season','Gear','GearCode','RepeatedDay','DepthStratum','Depth','Disturbance','Station','NStations',target_vars)
 	dt_site<-a[,..final_cols]
-	save(dt_site, target_vars, file=paste(dir_save, site,".Rdata",sep=""))
+	save(dt_site, target_vars, file=paste(dir_outputs, site,".Rdata",sep=""))
