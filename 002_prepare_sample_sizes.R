@@ -5,6 +5,8 @@
 # ==============================
 
 rm(list=ls())
+
+# loads libraries
 library(data.table)
 
 # user: select site 
@@ -22,7 +24,7 @@ library(data.table)
 	all(dt_site[,.N, list(Year, DepthStratum)][order(Year, DepthStratum)]==dt_site[,length(unique(Station)), list(Year, DepthStratum)][order(Year, DepthStratum)])
 
 # prepares sample sizes			
-	out<-dt_site[,list(Year, DepthStratum,N=NStations)][order(Year, DepthStratum,N)]
+	out<-dt_site[,list(Year, DepthStratum,N)][order(Year, DepthStratum,N)]
 
 # user: you can tune the below to your specific example (but keep the use of "n" as prefix - it is looked for in a later script)
 	out$n21<-7
