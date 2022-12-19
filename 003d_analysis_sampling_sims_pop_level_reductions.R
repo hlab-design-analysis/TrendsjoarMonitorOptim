@@ -6,25 +6,28 @@
 
 rm(list=ls()); graphics.off()
 
+# auto: loads libraries
 library(data.table)
-#library("PerformanceAnalytics")
+library(xlsx)
 
-# sources required functions
+# auto: loads functions
 source("000_Funs/func_do_summary_stratified_mean_time_series.r")
 
 # user: select site
 site<-"Stensjön" 
-
 
 # user: sets dir
 dir_inputs_data<-"001_Inputs/prepared/"
 dir_inputs_sim_res <- "003_SamplingSims/"
 dir_outputs <- "003_SamplingSims/Analysis_Reduction/"; dir.create(dir_outputs, recursive=T, showWarnings=FALSE)
 
-# loads original data			
-	load(file=paste(dir_inputs_data,site,".Rdata",sep=""))
-# loads simulations
-	load(file=paste(dir_inputs_sim_res, site, "_3sims_res_pop_prep.RData", sep="")) 
+# user: select nsims (used to load sim results - should be the same as set in 003a)
+	nsims<-5 # 10000
+
+# auto: loads sample data (output from script 001)
+	load(file=paste0(dir_inputs_data,site,".Rdata"))
+# auto: loads simulations
+	load(file=paste0(dir_inputs_sim_res, site,"_",nsims,"sims_res_pop_prep.RData", sep="")) 
 
 # some formating
 	boot_res_pop$SampSize<-factor(boot_res_pop$SampSize, levels=c('N','n21','n18','n15','n12'), ordered=T)
@@ -53,7 +56,7 @@ target_vars<-c('AbCyW','BabborB','BgäddaB','BlakeB','BmörtB','BpiscAbbBNet','B
 		# creates and saves final summary of results
 		a<-rbind(data.frame(Indicator = target_vars, CV = "min(5%)", out0[target_vars,], row.names=NULL), data.frame(Indicator = target_vars, CV = "median", out2[target_vars,], row.names=NULL), data.frame(Indicator = target_vars, CV = "max(95%)", out3[target_vars,], row.names=NULL))
 		a$Indicator<-factor(a$Indicator, levels=target_vars)
-		write.csv(t(a[order(a$Indicator),]), file= paste(dir_outputs,site , "_summary_pop_level.csv", sep=""))
+		write.xlsx(t(a[order(a$Indicator),]), file= paste(dir_outputs,site , "_summary_pop_level.xlsx", sep=""), col.names = FALSE)
 			
 
 	# ===================	
@@ -74,7 +77,7 @@ target_vars<-c('AbCyW','BabborB','BgäddaB','BlakeB','BmörtB','BpiscAbbBNet','B
 				plot(b$boothigh_perc~b$id, type="n", ylim=ylimite, ylab = ylabel, xlab="year", las=2, main=tit, xlim=c(min(b$id), max(b$id)+1))
 				
 			counter<-0
-			for(sampsize in levels(b$SampSize)[1:5])
+			for(sampsize in levels(b$SampSize))
 			{
 				print(sampsize)
 				a<-b[SampSize==sampsize,]
