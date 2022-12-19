@@ -6,6 +6,7 @@
 
 rm(list=ls()); graphics.off()
 
+# loads packages
 library(data.table)
 library(Kendall)
 
@@ -14,33 +15,35 @@ site <- "Stensjön"
 
 # user: sets dir
 dir_inputs_data<-"001_Inputs/prepared/"
-dir_inputs_samp_sims <- "003_SamplingSims/"
+dir_inputs_sampling_sim_res <- "003_SamplingSims/"
 dir_inputs_trend_sims <- "004_TrendSims/"
 dir_outputs_trend_original <- "004_TrendSims/Analysis_Original/"; dir.create(dir_outputs_trend_original, recursive=T, showWarnings=FALSE)
 dir_outputs_trend_reduction <- "004_TrendSims/Analysis_Reduction/"; dir.create(dir_outputs_trend_reduction, recursive=T, showWarnings=FALSE)
 
-# user: define omdrev
-target_omdrev<-c(1)
-if(any(!target_omdrev %in% c(1:3))) print("omdrev not define")
+# user: define sampling frequency (1 for annual, 2 for every other year)
+target_sampfreq<-c(1)
+if(any(!target_sampfreq %in% c(1:2))) print("omdrev not define")
 
+# user: select nsims and nsims_trend (used to load sim results - should be the same as set in 004a)
+	nsims<-5 # 10000
+	nsims_trend<-5 # 10000
 
 # =======================	
 # Loading
 # =======================
 
-	# loads original data	# dt_site		
-		load(file=paste(dir_inputs_data,site,".Rdata",sep=""))
+# auto: loads sample data (output from script 001)
+	load(file=paste0(dir_inputs_data,site,".Rdata"))
  
- 	# loads simulations # res_pop, boot_res_pop, nsim
-		load(file=paste(dir_inputs_samp_sims, site,"_3sims_res_pop_prep.rdata", sep="")) 
+# auto: loads simulations
+	load(file=paste0(dir_inputs_sampling_sim_res, site,"_",nsims,"sims_res_pop_prep.RData", sep="")) 
  
-	# loads regression simulations
-		res_omdrev1<-data.table(readRDS(file=paste(dir_inputs_trend_sims, site,"_omdrev_1_",nsim,"_regrsims_res_model.rds", sep="")))
-		#res_omdrev2<-data.table(readRDS(file=paste(dir_inputs_trend_sims, site,"_omdrev_2_",nsim,"_regrsims_res_model.rds", sep="")))
-		#res_omdrev3<-data.table(readRDS(file=paste(dir_sim_outputs, site, "_", scenario,"_omdrev_3_1000_regrsims_res_model.rds", sep="")))
+# auto: loads regression simulations
+	if(1 %in% target_sampfreq) res_sampfreq1<-data.table(readRDS(file=paste(dir_inputs_trend_sims, site,"_sampfreq1_",nsims,"_", nsims_trend,"_trendsims_res_model.rds", sep="")))
+	if(2 %in% target_sampfreq) res_sampfreq2<-data.table(readRDS(file=paste(dir_inputs_trend_sims, site,"_sampfreq2_",nsims,"_", nsims_trend,"_trendsims_res_model.rds", sep="")))
 
 	# some formatting
-		target_vars <- c('AbCyW','BabborB','BgäddaB','BlakeB','BmörtB','BpiscAbbBNet','BtotalB','gmLabboB','gmLmörtB','MeanW','NabborB','Narter','NgäddaB','NlakeB','NmörtB','Nspecies','NtotalB','pCyp','pPiscPerc','SDn','SDn2','SDw')
+		target_vars <- c('AbCyW','BabborB','BgäddaB','BlakeB','BmörtB','BpiscAbbBNet','BtotalB','gmLabboB','gmLmörtB','MeanW','NabborB','Narter','NgäddaB','NlakeB','NmörtB','Nspecies','NtotalB','pCyp','pPiscPerc','SDn','SDw')
 		res_pop$Year<-as.integer(as.character(res_pop$Year))
 	
 # =======================	
@@ -63,45 +66,42 @@ if(any(!target_omdrev %in% c(1:3))) print("omdrev not define")
 			x
 			})
 		res_trend<-do.call("rbind",ls2)
-		write.csv(res_trend, file=paste(dir_outputs_trend_original, site, "_origin_trend_",nsim,"_1000.csv", sep=""))
+		write.xlsx(res_trend, file=paste0(dir_outputs_trend_original, site, "_origin_trend_",nsims,"_",nsims_trend,"_trendsims.xlsx"), col.names = TRUE)
 		
 # =======================	
-# Computes omdrev trend
+# Compiles "true" trend
 # =======================
 	
-	# compiles results		
-		res_omdrev1$model_linear_true_slope<-res_trend$model_linear_true_slope[match(res_omdrev1$variable, res_trend$variable)]
-		res_omdrev1$model_linear_true_pvalue<-res_trend$model_linear_true_pvalue[match(res_omdrev1$variable, res_trend$variable)]
-		res_omdrev1$model_linear_true_sign<-res_trend$model_linear_true_sign[match(res_omdrev1$variable, res_trend$variable)]
-		res_omdrev1$model_kendall_true_tau<-res_trend$model_kendall_true_tau[match(res_omdrev1$variable, res_trend$variable)]
-		res_omdrev1$model_kendall_true_pvalue<-res_trend$model_kendall_true_pvalue[match(res_omdrev1$variable, res_trend$variable)]
-		res_omdrev1$model_kendall_true_sign<-res_trend$model_kendall_true_sign[match(res_omdrev1$variable, res_trend$variable)]
-		
-		res_omdrev2$model_linear_true_slope<-res_trend$model_linear_true_slope[match(res_omdrev2$variable, res_trend$variable)]
-		res_omdrev2$model_linear_true_pvalue<-res_trend$model_linear_true_pvalue[match(res_omdrev2$variable, res_trend$variable)]
-		res_omdrev2$model_linear_true_sign<-res_trend$model_linear_true_sign[match(res_omdrev2$variable, res_trend$variable)]
-		res_omdrev2$model_kendall_true_tau<-res_trend$model_kendall_true_tau[match(res_omdrev2$variable, res_trend$variable)]
-		res_omdrev2$model_kendall_true_pvalue<-res_trend$model_kendall_true_pvalue[match(res_omdrev2$variable, res_trend$variable)]
-		res_omdrev2$model_kendall_true_sign<-res_trend$model_kendall_true_sign[match(res_omdrev2$variable, res_trend$variable)]
-
-		#res_omdrev3$model_linear_true_slope<-res_trend$model_linear_true_slope[match(res_omdrev3$variable, res_trend$variable)]
-		#res_omdrev3$model_linear_true_pvalue<-res_trend$model_linear_true_pvalue[match(res_omdrev3$variable, res_trend$variable)]
-		#res_omdrev3$model_linear_true_sign<-res_trend$model_linear_true_sign[match(res_omdrev3$variable, res_trend$variable)]
-		# res_omdrev3$model_kendall_true_tau<-res_trend$model_kendall_true_tau[match(res_omdrev3$variable, res_trend$variable)]
-		# res_omdrev3$model_kendall_true_pvalue<-res_trend$model_kendall_true_pvalue[match(res_omdrev3$variable, res_trend$variable)]
-		# res_omdrev3$model_kendall_true_sign<-res_trend$model_kendall_true_sign[match(res_omdrev3$variable, res_trend$variable)]
+	# compiles results
+		if(1 %in% target_sampfreq){
+		res_sampfreq1$model_linear_true_slope<-res_trend$model_linear_true_slope[match(res_sampfreq1$variable, res_trend$variable)]
+		res_sampfreq1$model_linear_true_pvalue<-res_trend$model_linear_true_pvalue[match(res_sampfreq1$variable, res_trend$variable)]
+		res_sampfreq1$model_linear_true_sign<-res_trend$model_linear_true_sign[match(res_sampfreq1$variable, res_trend$variable)]
+		res_sampfreq1$model_kendall_true_tau<-res_trend$model_kendall_true_tau[match(res_sampfreq1$variable, res_trend$variable)]
+		res_sampfreq1$model_kendall_true_pvalue<-res_trend$model_kendall_true_pvalue[match(res_sampfreq1$variable, res_trend$variable)]
+		res_sampfreq1$model_kendall_true_sign<-res_trend$model_kendall_true_sign[match(res_sampfreq1$variable, res_trend$variable)]
+		}
+		if(2 %in% target_sampfreq){
+		res_sampfreq2$model_linear_true_slope<-res_trend$model_linear_true_slope[match(res_sampfreq2$variable, res_trend$variable)]
+		res_sampfreq2$model_linear_true_pvalue<-res_trend$model_linear_true_pvalue[match(res_sampfreq2$variable, res_trend$variable)]
+		res_sampfreq2$model_linear_true_sign<-res_trend$model_linear_true_sign[match(res_sampfreq2$variable, res_trend$variable)]
+		res_sampfreq2$model_kendall_true_tau<-res_trend$model_kendall_true_tau[match(res_sampfreq2$variable, res_trend$variable)]
+		res_sampfreq2$model_kendall_true_pvalue<-res_trend$model_kendall_true_pvalue[match(res_sampfreq2$variable, res_trend$variable)]
+		res_sampfreq2$model_kendall_true_sign<-res_trend$model_kendall_true_sign[match(res_sampfreq2$variable, res_trend$variable)]
+		}
 
     
-	compiled_res<-sapply(paste0("omdrev",target_omdrev), function(x) NULL)
+	compiled_res<-sapply(paste0("sampfreq",target_sampfreq), function(x) NULL)
 		
-		for (omdrev in paste0("omdrev",target_omdrev))
+		for (sampfreq in paste0("sampfreq",target_sampfreq))
 		{
-		print(omdrev)
-			assign("dt1",eval(parse(text=paste0("res_",omdrev))))
+		print(sampfreq)
+			assign("dt1",eval(parse(text=paste0("res_",sampfreq))))
 			table(dt1$SampSize)
 			ordered_SampSizes<-	c("N",names(table(dt1$SampSize))[-1][order(as.numeric(gsub("n","",names(table(dt1$SampSize))[grepl(names(table(dt1$SampSize)), pat="n")])), decreasing=T)][-length(names(table(dt1$SampSize)))])
 			dt1$SampSize<-factor(dt1$SampSize, levels=ordered_SampSizes, ordered=T)
-			if(any(table(dt1$SampSize, dt1$variable)!=3)) stop("check: simulations missing")
+			# check on variable order (should yield TRUE)
+			if(any(table(dt1$SampSize, dt1$variable)!=nsims_trend)) stop("check: simulations missing")
 		
 		
 			# biases and variances
@@ -123,7 +123,7 @@ if(any(!target_omdrev %in% c(1:3))) print("omdrev not define")
 				out_linear_1 <- rbind(data.frame("slope",t(round(res_trend[rownames(res_trend) %in% target_vars,3],5))),
 								data.frame("slope_signif",t(as.character(res_trend[rownames(res_trend) %in% target_vars,5]))),out_linear_1,use.names=FALSE)
 				colnames(out_linear_1) <- c("NA",target_vars)
-				write.csv( out_linear_1, file = paste(dir_results, site, "_", scenario,"_identical_linear_",omdrev,"_",nsim,"_1000.csv", sep=""), row.names=FALSE)
+				write.xlsx( out_linear_1, file = paste0(dir_outputs_trend_reduction, site, "_identical_linear_",sampfreq,"_",nsims,"_",nsims_trend,".xlsx"), row.names=FALSE)
 
 				# linear NAs
 				res3 <- dt1[variable %in% target_vars, sum(is.na(same_linear_trend_and_signif)), list(SampSize, variable)]; res3
@@ -140,15 +140,14 @@ if(any(!target_omdrev %in% c(1:3))) print("omdrev not define")
 				out_kendall_1 <- rbind(data.frame("tau",t(round(res_trend[rownames(res_trend) %in% target_vars,6],5))),
 								data.frame("tau_signif",t(as.character(res_trend[rownames(res_trend) %in% target_vars,8]))),out_kendall_1,use.names=FALSE)
 				colnames(out_kendall_1) <- c("NA",target_vars)
-# check target variables
-				write.csv( out_kendall_1, file = paste(dir_results, site, "_", scenario,"_identical_kendall",omdrev,"_",nsim,"_1000.csv", sep=""), row.names=FALSE)
+				write.xlsx( out_kendall_1, file = paste0(dir_outputs_trend_reduction, site, "_identical_kendall_",sampfreq,"_",nsims,"_",nsims_trend,".xlsx"), row.names=FALSE)
 
 				# kendal NAs
 				res3_k <- dt1[variable %in% target_vars, sum(is.na(same_kendall_trend_and_signif)), list(SampSize, variable)]; res3_k
 				dcast(res3_k, SampSize~variable)
 
-				compiled_res[[omdrev]]$linear<-out_linear_1
-				compiled_res[[omdrev]]$kendall<-out_kendall_1
+				compiled_res[[sampfreq]]$linear<-out_linear_1
+				compiled_res[[sampfreq]]$kendall<-out_kendall_1
 
 }
 
