@@ -8,7 +8,7 @@ rm(list=ls()); gc()
 
 library(data.table)
 
-# sources required functions
+# loads required functions
 source("000_Funs/func_do_summary_stratified_mean_time_series.r")
 source("000_Funs/func_do_additional_calcs_slab.r", enc="UTF-8")
 
@@ -20,12 +20,18 @@ source("000_Funs/func_do_additional_calcs_slab.r", enc="UTF-8")
 	dir_inputs_sim_res <- "003_SamplingSims/"
 	dir_outputs_sim_prep <- "003_SamplingSims/"
 
-# loads original data			
-	load(file=paste0(dir_inputs_data,"/",site,".RData"))
+# user: select site
+	site<-"Stensjön" 
+
+# user: select nsims (used to load sim results - should be the same as set in 003a)
+	nsims<-5 # 10000
+
+# auto: loads sample data (output from script 001)
+	load(file=paste0(dir_inputs_data,site,".Rdata"))
  
-# loads sim settings and simulated data (population)
-	load(file=paste(dir_inputs_sim_res, site,"_3sims_settings.RData", sep=""))
-	sim_pop<-readRDS(file=paste(dir_inputs_sim_res, site,"_3sims_res_pop.rds", sep="")) 
+# auto: loads sim settings and simulated data (population)
+	load(file=paste0(dir_inputs_sim_res, site,"_",nsims,"sims_settings.RData"))
+	sim_pop<-readRDS(file=paste0(dir_inputs_sim_res, site,"_",nsims,"sims_res_pop.rds")) 
 
 	# deletes unnecessary columns
 		sim_pop <- sim_pop[,!c(".id")]
@@ -43,7 +49,7 @@ source("000_Funs/func_do_additional_calcs_slab.r", enc="UTF-8")
 		res_pop<-c()
 		for (i in target_vars)
 		{
-		res_pop<-rbind(res_pop, do_summary_stratified_mean_time_series(x = dt_site, target_var = i, strata_var = "DepthStratum", strata_size_var = "NStations", period_var = "Year")$pop_res)
+		res_pop<-rbind(res_pop, do_summary_stratified_mean_time_series(x = dt_site, target_var = i, strata_var = "DepthStratum", strata_size_var = "N", period_var = "Year")$pop_res)
 		}
 		
 		tmp<-rbindlist(lapply(split(dt_site, dt_site$Year), function(x) {
@@ -53,7 +59,9 @@ source("000_Funs/func_do_additional_calcs_slab.r", enc="UTF-8")
 			# fixes columns
 			colnames(res_pop)[colnames(res_pop)=="period"]<-"Year"
 			# creates IDs
-			res_pop$ID<-paste(res_pop$Year,res_pop$variable); sum(duplicated(res_pop$ID))==0
+			res_pop$ID<-paste(res_pop$Year,res_pop$variable); 
+			# check: should yield TRUE
+			sum(duplicated(res_pop$ID))==0
 			# sets to data.table
 			res_pop<-data.table(res_pop)
 			# sets key
@@ -92,7 +100,7 @@ source("000_Funs/func_do_additional_calcs_slab.r", enc="UTF-8")
 		# clean up
 		gc(); rm(ls1, ls2, sim_pop); gc()
 		
-		# adds bootstrap ci with normal approx (See article)
+		# adds bootstrap ci with normal approx 
 		boot_res_pop$bootlow_aprox<-boot_res_pop$true_mean-1.96*sqrt(boot_res_pop$boot_var_mean) 
 		boot_res_pop$boothigh_aprox<-boot_res_pop$true_mean+1.96*sqrt(boot_res_pop$boot_var_mean)
 
@@ -106,8 +114,8 @@ source("000_Funs/func_do_additional_calcs_slab.r", enc="UTF-8")
 	# =============	
 			
 		print(".saving objects...")		
-		filename<-paste(site,"_",nsim,"sims_res_pop_prep.RData",sep="");
-		save(boot_res_pop, res_pop, target_vars, nsim, cpus, site, sampOpt, file = paste0(dir_outputs,filename))			
+		filename<-paste(site,"_",nsims,"sims_res_pop_prep.RData",sep="");
+		save(boot_res_pop, res_pop, target_vars, nsims, ncpus, site, sampOpt, file = paste0(dir_outputs_sim_prep,filename))			
 		print(paste(dir_outputs_sim_prep,filename,sep=""))
 		cat(".total time: ", Sys.time()-ptc0,"\n")
 
